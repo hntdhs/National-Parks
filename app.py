@@ -58,6 +58,14 @@ def homepage():
     else:
         return render_template('no_user_home.html')
 
+@app.route('/national-parks', methods=["GET"])
+def getNationalParks():
+    """
+        - Hits the external API to get all the parks
+        - Filter the parks to only include National Parks
+        - Return the National Parks
+    """
+    return 'Works!'
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -134,23 +142,23 @@ def logout():
     return redirect("/login")
 
 
-@app.route('/parks')
-def show_parks():
-    # api call to show parks
-    # render template logged_in_home, parks=parks
+# @app.route('/parks')
+# def show_parks():
+#     # api call to show parks
+#     # render template logged_in_home, parks=parks
 
 
-@app.route('/parks/<int:park_id>')
-def park_info(park_id):
-    park = Park.query.get_or_404(park_id)
-    # api call needed to get park info
+# @app.route('/parks/<int:park_id>')
+# def park_info(park_id):
+#     park = Park.query.get_or_404(park_id)
+#     # api call needed to get park info
 
 
-@app.route('/favorite_parks')
-def show_favorites():
-    # query the database to find any parks the user has favorited, otherwise show message that they haven't favorited any yet
+# @app.route('/favorite_parks')
+# def show_favorites():
+#     # query the database to find any parks the user has favorited, otherwise show message that they haven't favorited any yet
 
 
-@app.route('/visited_parks')
-def show_favorites():
-    # query the database to find any parks the user has visited, otherwise show message that they haven't visited any yet
+# @app.route('/visited_parks')
+# def show_favorites():
+#     # query the database to find any parks the user has visited, otherwise show message that they haven't visited any yet
