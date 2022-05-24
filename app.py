@@ -53,6 +53,8 @@ def homepage():
     """first page user sees, allows user to either sign up or log in"""
 
     if g.user:
+        # followed parks = [list comprehension], parks wishlist = [list comprehension], pass into the template below
+        # parks = api call, parks = parks passed into template 
         return render_template('logged_in_home.html')
 
     else:
