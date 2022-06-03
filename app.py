@@ -1,10 +1,13 @@
 import os
 import pdb
+from unicodedata import name
+
+import urllib.request, json
 
 from flask import Flask, redirect, render_template, flash, url_for, request, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 
-from models import db, connect_db, User
+from models import db, connect_db, User, Park
 from forms import NewUserForm, LoginForm, UserEditForm
 
 CURR_USER_KEY = "curr_user"
@@ -21,6 +24,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 toolbar = DebugToolbarExtension(app)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 
 connect_db(app)
@@ -60,14 +64,14 @@ def homepage():
     else:
         return render_template('no_user_home.html')
 
-@app.route('/national-parks', methods=["GET"])
-def getNationalParks():
-    """
-        - Hits the external API to get all the parks
-        - Filter the parks to only include National Parks
-        - Return the National Parks
-    """
-    return 'Works!'
+# @app.route('/national-parks', methods=["GET"])
+# def getNationalParks():
+#     """
+#         - Hits the external API to get all the parks
+#         - Filter the parks to only include National Parks
+#         - Return the National Parks
+#     """
+#     return 'Works!'
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -77,7 +81,7 @@ def signup():
 
     If form not valid, present form.
 
-    If the there already is a user with that username: flash message
+    If there already is a user with that username: flash message
     and re-present form.
     """
 
@@ -85,7 +89,7 @@ def signup():
     if form.validate_on_submit():
         # try:
         user = User.signup(
-           username=form.username.data,
+            username=form.username.data,
             password=form.password.data,
             email=form.email.data,
             )
@@ -144,23 +148,43 @@ def logout():
     return redirect("/login")
 
 
-# @app.route('/parks')
-# def show_parks():
+@app.route('/parks')
+def show_parks():
+    endpoint = "https://developer.nps.gov/api/v1/parks?limit=60"
+    HEADERS = {"Authorization":"HCUiwHQkl2ba987vKC6YK6zCXUQTrOnhs6K3f2BZD7Z"}
+    req = urllib.request.Request(endpoint,headers=HEADERS)
+
+    # Execute request and parse response
+    response = urllib.request.urlopen(req).read()
+    data = json.loads(response.decode('utf-8'))
+
+    park = Park(
+        name=fullName.data
+    )
+
+    # Prepare and execute output
+    for park in data["data"]:
+        print(park["fullName"])
 #     # api call to show parks
 #     # render template logged_in_home, parks=parks
+# add parks to model here?
 
 
 # @app.route('/parks/<int:park_id>')
 # def park_info(park_id):
 #     park = Park.query.get_or_404(park_id)
-#     # api call needed to get park info
+#     # api call needed to get park info that isn't in the initial API call that gets the basic park info and should build the parks table - would these then be seperate models/tables?
+#       render template individual_park.html, park=park, other variables coming from other API calls happening in this route
 
 
 # @app.route('/favorite_parks')
 # def show_favorites():
 #     # query the database to find any parks the user has favorited, otherwise show message that they haven't favorited any yet
+#  get favorited parks from that table 
+# render template favorites.html
 
 
 # @app.route('/visited_parks')
 # def show_favorites():
 #     # query the database to find any parks the user has visited, otherwise show message that they haven't visited any yet
+# render template visited.html
