@@ -31,6 +31,7 @@ class User(db.Model):
 
     location = db.Column(
         db.Text,
+        nullable=True,
     )
 
     password = db.Column(
@@ -57,6 +58,26 @@ class User(db.Model):
         db.session.add(user)
         return user
 
+    @classmethod
+    def authenticate(cls, username, password):
+        """Find user with `username` and `password`.
+
+        This is a class method (call it on the class, not an individual user.)
+        It searches for a user whose password hash matches this password
+        and, if it finds such a user, returns that user object.
+
+        If can't find matching user (or if password is wrong), returns False.
+        """
+
+        user = cls.query.filter_by(username=username).first()
+
+        if user:
+            is_auth = bcrypt.check_password_hash(user.password, password)
+            if is_auth:
+                return user
+
+        return False
+
 
 class Park(db.Model):
 
@@ -69,6 +90,11 @@ class Park(db.Model):
 
     name = db.Column(
         db.Text,
+        nullable=False,
+    )
+
+    fees = db.Column(
+        db.Float,
         nullable=False,
     )
 

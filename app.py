@@ -1,5 +1,5 @@
 import os
-import pdb
+# import pdb
 from unicodedata import name
 
 import urllib.request, json
@@ -122,6 +122,7 @@ def login():
                                  form.password.data)
 
         if user:
+            # pdb.set_trace()
             do_login(user)
             flash(f"Hello, {user.username}!", "success")
             # return render_template('logged_in_home.html')
@@ -132,7 +133,7 @@ def login():
 
         flash("Username and/or password are incorrect", 'danger')
         # how is this different from the return render_templatee('/login') right below - isn't that what happens if login info is incorrect? why was this in the form.validate_on_submit section? does it just go there when it hits the breakpoint below? 
-        breakpoint()
+        # breakpoint()
 
     return render_template('/login.html', form=form)
 
@@ -150,21 +151,27 @@ def logout():
 
 @app.route('/parks')
 def show_parks():
-    endpoint = "https://developer.nps.gov/api/v1/parks?limit=60"
-    HEADERS = {"Authorization":"HCUiwHQkl2ba987vKC6YK6zCXUQTrOnhs6K3f2BZD7Z"}
-    req = urllib.request.Request(endpoint,headers=HEADERS)
+    endpoint = "https://developer.nps.gov/api/v1/parks?limit=60&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z"
+    # HEADERS = {"Authorization":"HCUiwHQkl2ba987vKC6YK6zCXUQTrOnhs6K3f2BZD7Z"}
+    req = urllib.request.Request(endpoint)
 
     # Execute request and parse response
     response = urllib.request.urlopen(req).read()
     data = json.loads(response.decode('utf-8'))
 
-    park = Park(
-        name=fullName.data
-    )
-
+    
+# empty python arr of parks here and append to it in for loop
+    park_array = []
     # Prepare and execute output
-    for park in data["data"]:
-        print(park["fullName"])
+    for place in data["data"]:
+        print(place["fullName"])
+        park = Park(name=place["fullName"], fees=place["fees"])
+
+        park_array.append(park)
+    
+    return render_template('/logged_in_home.html', park_array=park_array)
+
+    # db session commit here
 #     # api call to show parks
 #     # render template logged_in_home, parks=parks
 # add parks to model here?
