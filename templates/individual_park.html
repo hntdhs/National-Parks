@@ -1,9 +1,61 @@
-<!-- takes and displays information from the API calls in the route. Has buttons for adding the park to wishlist or follow.  Need to figure out how that action adds the park to those models/tables.-->
+<!-- takes and displays information from the API calls in the route. Has buttons for adding the park to wishlist or follow.  Need to figure out how that action adds the park to those models/tables. Maybe just a yes/no column in the parks table?-->
 
 <!-- these would each be a separate jinja loop, each with a different class to make it easy to do CSS differently for each? -->
 <!-- name, img, fees, location, operating hours, description, activities (do it like {{ park.name}}) has {{ park.activity }}! ), separate call/PUT API CALL IN ROUTE: articles, separate call: campgrounds -->
 
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>This is the page for {{ park.name }}</h1>
+
+<img src="{{ park.image_url }}" alt="{{ park.image_altText }}">
+{{ park.image_title }}
+
+
+<h2>{{ park.name }} is located in lovely {{ park.town }}, {{ park.state }}</h2>
+
+<p>{{ park.description }}</p>
+
+{{ park.ent_fees_cost }}
+{{ park.ent_fees_description }}
+{{ park.ent_fees_title }}
+{{ park.ent_passes_cost }}
+{{ park.ent_passes_description }}
+{{ park.ent_passes_title }}
+
+This is one activity you can do in the park:
+{{ park.activity }}
+
+Contact:
+{{ park.phone }}
+
+Would you like to know about the campsite options available at {{ park.name }}?
+<a href="/campgrounds.html">Find that info here!</a>
+
+Find directions to the park here:
+<a href="{{ park.directions_url }}">{{ park.directions_url }}</a>
+
+What weather might one expect to find in {{ park.name }}? Well...
+{{ park.weather_info }}
+
+Park Hours:
+{{ park.hours }}
+
+
+{% for art in articles_array %}
+    <img src="{{ articles.image_url }}" alt="{{ articles.img_altText }}">
+    <h3>{{ articles.title }}</h3>
+    <a href="{{ articles.url }}">@{{ articles.title }}</a>
+    <p>{{ articles.description }}</p>
+{% endfor %}
 
 
 
+
+{% endblock %}
+
+
+<!-- need link for campgrounds page now -->
 <!-- future idea - current weather display -->
+

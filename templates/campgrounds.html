@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{{ campground.name }}
+{{ campground.url }}
+{{ campground.name }}
+{{ campground.description }}
+Audio description:
+{{ campground.audio_description }}
+{{ campground.reservation_info }}
+{{ campground.reservation_url }}
+<img src="{{ campground.image_url }}" alt="{{ campground.image_altText }}">
+{{ campground.image_title }}
+<p>see website for information on amenities such as restrooms, showers, internet availability, and more</p>
+
+
+
+
+{% endblock %}
+<!-- might have to make a campground array in the route -->

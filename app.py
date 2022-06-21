@@ -7,7 +7,8 @@ import urllib.request, json
 from flask import Flask, redirect, render_template, flash, url_for, request, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 
-from models import db, connect_db, User, Park
+from models import db, connect_db, User, Park, Article, Campground
+# from models import Visited_Park, Favorite
 from forms import NewUserForm, LoginForm, UserEditForm
 
 CURR_USER_KEY = "curr_user"
@@ -16,8 +17,7 @@ app = Flask(__name__)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgresql:///parks'))
+app.config['SQLALCHEMY_DATABASE_URI'] = (os.environ.get('DATABASE_URL', 'postgresql:///parks_db'))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -152,39 +152,78 @@ def logout():
 @app.route('/parks')
 def show_parks():
     endpoint = "https://developer.nps.gov/api/v1/parks?limit=60&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z"
-    # HEADERS = {"Authorization":"HCUiwHQkl2ba987vKC6YK6zCXUQTrOnhs6K3f2BZD7Z"}
     req = urllib.request.Request(endpoint)
 
     # Execute request and parse response
     response = urllib.request.urlopen(req).read()
     data = json.loads(response.decode('utf-8'))
 
-    
-# empty python arr of parks here and append to it in for loop
     park_array = []
     # Prepare and execute output
     for place in data["data"]:
-        print(place["fullName"])
-        park = Park(name=place["fullName"], fees=place["fees"])
+        if place["designation"] == "National Park":
+            # *******************
+        # print(place["fullName"])
+            park = Park(id=place["id"], name=place["fullName"], code=place["parkCode"], description=place["description"], ent_fees_cost=place["entranceFees"]["cost"], ent_fees_description=place["entranceFees"]["description"], ent_fees_title=place["entranceFees"]["title"], ent_passes_cost=["entranceFees"]["cost"], ent_passes_description=["entranceFees"]["description"], ent_passes_title=["entranceFees"]["title"], activity=place["activities"]["name"], state=place["states"], phone=place["contacts"]["phoneNumbers"]["phoneNumber"], directions_url=place["directionsUrl"], hours=place["operatingHours"]["description"], town=place["addresses"]["city"], image_title=place["images"]["title"], image_altText=place["images"]["altText"], image_url=place["images"]["url"], weather_info=place["weatherInfo"])
+            # so there's multiple activities per park. would i have to make an activities table to be able to display more than the first one's name? what about states? is it just a string with multiple state abbreviations?
 
-        park_array.append(park)
+            park_array.append(park)
+
+            db.session.commit()
+        # should this be indented in the for loop?
+        # **************
     
     return render_template('/logged_in_home.html', park_array=park_array)
 
     # db session commit here
-#     # api call to show parks
-#     # render template logged_in_home, parks=parks
-# add parks to model here?
 
 
-# @app.route('/parks/<int:park_id>')
-# def park_info(park_id):
-#     park = Park.query.get_or_404(park_id)
-#     # api call needed to get park info that isn't in the initial API call that gets the basic park info and should build the parks table - would these then be seperate models/tables?
-#       render template individual_park.html, park=park, other variables coming from other API calls happening in this route
+@app.route('/parks/<int:park_id>')
+def park_info(park_id):
+    # *********** is this actually getting the park id from anywhere does it just say that?
+
+# should i do separate functions inside the route for the different API calls? return statement at the end of each function, then pass each returned object into the template? can you even do return statements and return render template in one route like that? probably Google function/Flask route with multiple API calls. maybe it's something like API call for activities data/activities array created/for loop for the activities data/same sequence for API call for campgrounds/in render template, activities_arr=activities_arr, campgrounds_arr=campgrounds_arr.
+    park = Park.query.get_or_404(park_id)
+
+    articlesEndpoint = f("https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=1&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
+    # ****** is that the right way to get the park id in there?
+    # f string/string interprelation
+    req = urllib.request.Request(articlesEndpoint)
+
+    # Execute request and parse response
+    response = urllib.request.urlopen(req).read()
+    data = json.loads(response.decode('utf-8'))
+
+    articles_array = []
+
+    for art in data["data"]:
+        article = Article(id=art["id"], url=art["url"], title=art["title"], description=art["listingDescription"], image_url=art["listingImage"]["url"], image_altText=art["listingImage"]["altText"])
+
+        articles_array.append(article)
+
+    return render_template('/individual_park.html', park=park, articles_array=articles_array)
+
+
+@app.route('/campgrounds/<int:park_id>')
+def show_campgrounds(park_id):
+
+    park = Park.query.get_or_404(park_id)
+
+    campgroundsEndpoint = f("https://developer.nps.gov/api/v1/campgrounds?parkCode={park.code}&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
+    req = urllib.request.Request(campgroundsEndpoint)
+
+    # Execute request and parse response
+    response = urllib.request.urlopen(req).read()
+    data = json.loads(response.decode('utf-8'))
+
+    for ground in data["data"]:
+        campground = Campground(id=ground["id"], url=ground["url"], name=ground["name"], description=ground["description"], audio_description=ground["audioDescription"], reservation_info=ground["reservationInfo"], reservation_url=ground["reservationUrl"], image_title=ground["images"]["title"], image_url=ground["images"]["url"], image_altText=ground["images"]["altText"])
+
+    return render_template('/campgrounds.html', park=park, campground=campground)
 
 
 # @app.route('/favorite_parks')
+# feed in user_id probably
 # def show_favorites():
 #     # query the database to find any parks the user has favorited, otherwise show message that they haven't favorited any yet
 #  get favorited parks from that table 

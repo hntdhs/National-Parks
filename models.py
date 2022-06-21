@@ -1,5 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -38,6 +39,8 @@ class User(db.Model):
         db.Text,
         nullable=False,
     )
+
+    # parks = relationship('Park')
 
     # park likes/followed/visited/etc? UserLikes would be seperate model
 
@@ -93,10 +96,210 @@ class Park(db.Model):
         nullable=False,
     )
 
-    fees = db.Column(
-        db.Float,
+    code = db.Column(
+        db.Text,
         nullable=False,
     )
+
+    description = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    ent_fees_cost = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    ent_fees_description = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    ent_fees_title = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    ent_passes_cost = db.Column(
+        db.Text,
+        nullable=True,
+    )
+
+    ent_passes_description = db.Column(
+        db.Text,
+        nullable=True,
+    )
+
+    ent_passes_title = db.Column(
+        db.Text,
+        nullable=True,
+    )
+
+    activity = db.Column(
+        db.Text,
+        nullable=True,
+    )
+
+    state = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    phone = db.Column(
+        db.Text,
+        nullable=True,
+    )
+
+    directions_url = db.Column(
+        db.Text,
+        nullable=True,
+    )
+
+    hours = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    town = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    image_title = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    image_altText = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    image_url = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    fees = db.Column(
+        db.Float,
+        # is Float right? could  do string just so I dontv lose formatting wiuth dollar signs
+        nullable=False,
+    )
+
+    # users = relationship('User')
+
+class Article(db.Model):
+
+    __tablename__ = 'articles'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    url = db.Column(
+        db.Text,
+        # is Text right? several seem questionable
+    )
+
+    title = db.Column(
+        db.Text,
+    )
+
+    description = db.Column(
+        db.Text,
+    )
+
+    image_url = db.Column(
+        db.Text,
+    )
+
+    image_altText = db.Column(
+        db.Text,
+    )
+
+class Campground(db.Model):
+
+    __tablename__ = 'campgrounds'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    url = db.Column(
+        db.Text,
+    )
+
+    name = db.Column(
+        db.Text
+    )
+
+    description = db.Column(
+        db.Text
+    )
+
+    audio_description = db.Column(
+        db.Text
+    )
+
+    reservation_info = db.Column(
+        db.Text
+    )
+
+    reservation_url = db.Column(
+        db.Text
+    )
+    
+    image_title = db.Column(
+        db.Text
+    )
+    # ************* each iteration of Campground has 1 name, 1 url, 1 description, etc. But they have multiple images. Does it matter that there's only one column for image url if there's multiple images?
+
+    image_url = db.Column(
+        db.Text
+    )
+
+    image_altText = db.Column(
+        db.Text,
+    )
+
+
+# see around line 99 in warbler for adding relationships
+# class Favorite(db.Model):
+
+#     __tablename__ = 'favorites'
+
+#     user_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('users.id', ondelete='CASCADE'),
+#         nullable=False,
+#     )
+
+#     parks_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('parks.id', ondelete='CASCADE'),
+#         nullable=False,
+#     ) 
+
+
+
+# class Visited_Park(db.Model):
+
+#     __tablename__ = 'visited'
+
+#     user_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('users.id', ondelete='CASCADE'),
+#         nullable=False,
+#     )
+
+#     parks_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('parks.id', ondelete='CASCADE'),
+#         nullable=False,
+#     ) 
 
 
 
