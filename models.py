@@ -8,13 +8,13 @@ db = SQLAlchemy()
 
 user_visited = db.table(
     'user_visited',
-    db.Column('user_id', db.Integer, db.ForeighKey('user_id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
     db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
 )
 
 user_favorited = db.table(
     'user_favorited',
-    db.Column('user_id', db.Integer, db.ForeighKey('user_id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
     db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
 )
 # the video I watched didn't have these as classes, but in Warbler they are
