@@ -185,7 +185,7 @@ def park_info(park_id):
 # should i do separate functions inside the route for the different API calls? return statement at the end of each function, then pass each returned object into the template? can you even do return statements and return render template in one route like that? probably Google function/Flask route with multiple API calls. maybe it's something like API call for activities data/activities array created/for loop for the activities data/same sequence for API call for campgrounds/in render template, activities_arr=activities_arr, campgrounds_arr=campgrounds_arr.
     park = Park.query.get_or_404(park_id)
 
-    articlesEndpoint = f("https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=1&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
+    articlesEndpoint = (f"https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=1&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
     # ****** is that the right way to get the park id in there?
     # f string/string interprelation
     req = urllib.request.Request(articlesEndpoint)
@@ -209,7 +209,7 @@ def show_campgrounds(park_id):
 
     park = Park.query.get_or_404(park_id)
 
-    campgroundsEndpoint = f("https://developer.nps.gov/api/v1/campgrounds?parkCode={park.code}&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
+    campgroundsEndpoint = (f"https://developer.nps.gov/api/v1/campgrounds?parkCode={park.code}&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
     req = urllib.request.Request(campgroundsEndpoint)
 
     # Execute request and parse response
@@ -222,12 +222,16 @@ def show_campgrounds(park_id):
     return render_template('/campgrounds.html', park=park, campground=campground)
 
 
-# @app.route('/favorite_parks')
-# feed in user_id probably
-# def show_favorites():
-#     # query the database to find any parks the user has favorited, otherwise show message that they haven't favorited any yet
-#  get favorited parks from that table 
-# render template favorites.html
+@app.route('/users/<int:user_id>/favorite_parks')
+def show_favorites(user_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    return render_template('users/favorites.html', user=user)
+# now the question is how to display in the template. or do I do something in the route to get that info?
 
 
 # @app.route('/visited_parks')

@@ -6,7 +6,18 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 
+user_visited = db.table(
+    'user_visited',
+    db.Column('user_id', db.Integer, db.ForeighKey('user_id')),
+    db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
+)
 
+user_favorited = db.table(
+    'user_favorited',
+    db.Column('user_id', db.Integer, db.ForeighKey('user_id')),
+    db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
+)
+# the video I watched didn't have these as classes, but in Warbler they are
 
 class User(db.Model):
     """User in the system."""
@@ -40,9 +51,15 @@ class User(db.Model):
         nullable=False,
     )
 
-    # parks = relationship('Park')
+    user_favorites = db.relationship(
+        "User",
+        secondary="favorites",
+        primaryjoin=(Favorite.user_id == id),
+        secondaryjoin=(Favorite.park_id == id)
+    )
 
-    # park likes/followed/visited/etc? UserLikes would be seperate model
+
+    # parks = relationship('Park')
 
     @classmethod
     def signup(cls, username, email, password):
@@ -187,6 +204,10 @@ class Park(db.Model):
         nullable=False,
     )
 
+    articles = db.relationship(
+        "Article", backref=db.backref("user")
+    )
+
     # users = relationship('User')
 
 class Article(db.Model):
@@ -200,7 +221,6 @@ class Article(db.Model):
 
     url = db.Column(
         db.Text,
-        # is Text right? several seem questionable
     )
 
     title = db.Column(
@@ -267,21 +287,21 @@ class Campground(db.Model):
 
 
 # see around line 99 in warbler for adding relationships
-# class Favorite(db.Model):
+class Favorite(db.Model):
 
-#     __tablename__ = 'favorites'
+    __tablename__ = 'favorites'
 
-#     user_id = db.Column(
-#         db.Integer,
-#         db.ForeignKey('users.id', ondelete='CASCADE'),
-#         nullable=False,
-#     )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
 
-#     parks_id = db.Column(
-#         db.Integer,
-#         db.ForeignKey('parks.id', ondelete='CASCADE'),
-#         nullable=False,
-#     ) 
+    parks_id = db.Column(
+        db.Integer,
+        db.ForeignKey('parks.id', ondelete='CASCADE'),
+        nullable=False,
+    ) 
 
 
 
