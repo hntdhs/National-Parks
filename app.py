@@ -1,5 +1,5 @@
 import os
-# import pdb
+import pdb
 from unicodedata import name
 
 import urllib.request, json
@@ -8,7 +8,8 @@ from flask import Flask, redirect, render_template, flash, url_for, request, ses
 from flask_debugtoolbar import DebugToolbarExtension
 
 from models import db, connect_db, User, Park, Article, Campground
-# from models import Visited_Park, Favorite
+# from models import Favorite
+# from models import Visited_Park,
 from forms import NewUserForm, LoginForm, UserEditForm
 
 CURR_USER_KEY = "curr_user"
@@ -60,6 +61,7 @@ def homepage():
         # followed parks = [list comprehension], parks wishlist = [list comprehension], pass into the template below
         # parks = api call, parks = parks passed into template 
         return render_template('logged_in_home.html')
+        # not passing anything
 
     else:
         return render_template('no_user_home.html')
@@ -161,11 +163,21 @@ def show_parks():
     park_array = []
     # Prepare and execute output
     for place in data["data"]:
+        # pdb.set_trace()
         if place["designation"] == "National Park":
             # *******************
         # print(place["fullName"])
-            park = Park(id=place["id"], name=place["fullName"], code=place["parkCode"], description=place["description"], ent_fees_cost=place["entranceFees"]["cost"], ent_fees_description=place["entranceFees"]["description"], ent_fees_title=place["entranceFees"]["title"], ent_passes_cost=["entranceFees"]["cost"], ent_passes_description=["entranceFees"]["description"], ent_passes_title=["entranceFees"]["title"], activity=place["activities"]["name"], state=place["states"], phone=place["contacts"]["phoneNumbers"]["phoneNumber"], directions_url=place["directionsUrl"], hours=place["operatingHours"]["description"], town=place["addresses"]["city"], image_title=place["images"]["title"], image_altText=place["images"]["altText"], image_url=place["images"]["url"], weather_info=place["weatherInfo"])
+            # activityNames = ""
+            # activities = place[activities]
+            # for activity in activites:
+                # activityNames += (append activity name to empty string);
+                # then pass in the empty string to the park statement below
+            park = Park(id=place["id"], name=place["fullName"], code=place["parkCode"], description=place["description"])
+            # park = Park(id=place["id"], name=place["fullName"], code=place["parkCode"], description=place["description"], ent_fees_cost=place["entranceFees"][0]["cost"], ent_fees_description=place["entranceFees"][0]["description"], ent_fees_title=place["entranceFees"][0]["title"], ent_passes_cost=["entranceFees"][0]["cost"], ent_passes_description=["entranceFees"][0]["description"], ent_passes_title=["entranceFees"][0]["title"], activity=place["activities"]["name"], state=place["states"], phone=place["contacts"][0]["phoneNumbers"]["phoneNumber"], directions_url=place["directionsUrl"], hours=place["operatingHours"][0]["description"], town=place["addresses"]["city"], image_title=place["images"][0]["title"], image_altText=place["images"][0]["altText"], image_url=place["images"][0]["url"], weather_info=place["weatherInfo"])
+
             # so there's multiple activities per park. would i have to make an activities table to be able to display more than the first one's name? what about states? is it just a string with multiple state abbreviations?
+            # nested ones aren't working bc i'm not telling it which one to grab
+            #  standard hours is object not array, different loop
 
             park_array.append(park)
 
@@ -222,15 +234,15 @@ def show_campgrounds(park_id):
     return render_template('/campgrounds.html', park=park, campground=campground)
 
 
-@app.route('/users/<int:user_id>/favorite_parks')
-def show_favorites(user_id):
+# @app.route('/users/<int:user_id>/favorite_parks')
+# def show_favorites(user_id):
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
-    user = User.query.get_or_404(user_id)
-    return render_template('users/favorites.html', user=user)
+#     if not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
+# # need to reference the relationship
+#     user = User.query.get_or_404(user_id)
+#     return render_template('users/favorites.html', user=user)
 # now the question is how to display in the template. or do I do something in the route to get that info?
 
 

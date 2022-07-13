@@ -19,6 +19,24 @@ user_favorited = db.table(
 )
 # the video I watched didn't have these as classes, but in Warbler they are
 
+# see around line 202 in warbler for adding relationships
+# class Favorite(db.Model):
+
+#     __tablename__ = 'favorites'
+
+#     user_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('users.id', ondelete='CASCADE'),
+#         nullable=False,
+#     )
+
+#     parks_id = db.Column(
+#         db.Integer,
+#         db.ForeignKey('parks.id', ondelete='CASCADE'),
+#         nullable=False,
+#     ) 
+
+
 class User(db.Model):
     """User in the system."""
 
@@ -51,12 +69,12 @@ class User(db.Model):
         nullable=False,
     )
 
-    user_favorites = db.relationship(
-        "User",
-        secondary="favorites",
-        primaryjoin=(Favorite.user_id == id),
-        secondaryjoin=(Favorite.park_id == id)
-    )
+    # user_favorites = db.relationship(
+    #     "User",
+    #     secondary="favorites",
+    #     primaryjoin=(Favorite.user_id == id),
+    #     secondaryjoin=(Favorite.park_id == id)
+    # )
 
 
     # parks = relationship('Park')
@@ -204,9 +222,9 @@ class Park(db.Model):
         nullable=False,
     )
 
-    articles = db.relationship(
-        "Article", backref=db.backref("user")
-    )
+    # articles = db.relationship(
+    #     "Article", backref=db.backref("user")
+    # )
 
     # users = relationship('User')
 
@@ -286,22 +304,6 @@ class Campground(db.Model):
     )
 
 
-# see around line 99 in warbler for adding relationships
-class Favorite(db.Model):
-
-    __tablename__ = 'favorites'
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
-    )
-
-    parks_id = db.Column(
-        db.Integer,
-        db.ForeignKey('parks.id', ondelete='CASCADE'),
-        nullable=False,
-    ) 
 
 
 

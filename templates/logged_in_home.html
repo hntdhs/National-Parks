@@ -5,7 +5,7 @@
 {% block content %}
 
 {% for park in park_array %}
-    <a href="/parks/{{ park.id }}">{{ park.id }}</a>
+    <a href="/parks/{{ park.id }}">{{ park.fullName }}</a>
     <!-- <a href="/parks/{{ park.id }}">@{{ park.id }}</a> -->
 {% endfor %}
 
