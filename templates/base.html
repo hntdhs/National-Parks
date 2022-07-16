@@ -17,22 +17,27 @@
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
-    {% if g.user %}
+    
       <nav class="navbar navbar-expand">
             <div class="container-fluid">
               <div class="navbar-header">
-                <!-- <a href="/" class="navbar-brand"> -->
-                <img src="/static/images/mountain.png" alt="logo">
-                <span>National Parks</span>
-                <a href="/favorites">See Your Favorite Parks</a>
-                <a href="/visited">See Parks You've Visited</a>
-                <a href="/logout">Logout</a>
+                <a href="/" class="navbar-brand">
+                  {% if g.user %}
+                    <img src="/static/images/mountain.png" alt="logo">
+                    <span>National Parks</span>
+                    <a href="/favorites">See Your Favorite Parks</a>
+                    <a href="/visited">See Parks You've Visited</a>
+                    <a href="/logout">Logout</a>
+                  {% endif %}
+                  {% if not g.user %}
+                    <img src="/static/images/mountain.png" alt="logo">
+                    <h1>Welcome to the Database</h1>
+                  {% endif %} 
               </div>
             </div>
       </nav>
-    {% endif %}        
+           
 
-      test
 
       {% block content %}
       {% endblock %}

@@ -4,6 +4,9 @@ from unicodedata import name
 
 import urllib.request, json
 
+# this first line is new, can't figure out why environ is dimmed even though environ is used below where NPS_GOV_BASE_URL & API_KEY are declared
+# see article in chrome bookmarks about .env files
+from os import environ
 from flask import Flask, redirect, render_template, flash, url_for, request, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -29,6 +32,9 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 connect_db(app)
 
+# new
+NPS_GOV_BASE_URL = os.environ.get("NPS_GOV_BASE_URL", "https://developer.nps.gov/api/v1")
+NPS_GOV_API_KEY = os.environ.get("NPS_GOV_API_KEY")
 
 
 @app.before_request
@@ -60,7 +66,9 @@ def homepage():
 
     if g.user:
         # followed parks = [list comprehension], parks wishlist = [list comprehension], pass into the template below
+        # parks = api call, parks = parks passed into template 
         return render_template('logged_in_home.html')
+        # not passing anything
 
     else:
         return render_template('no_user_home.html')
@@ -117,21 +125,24 @@ def login():
     """Handle user login."""
 
     form = LoginForm()
-    # pdb.set_trace()
+
     if form.validate_on_submit():
         user = User.authenticate(form.username.data,
                                  form.password.data)
 
         if user:
+            # pdb.set_trace()
             do_login(user)
-            flash(f"Hello, {user.username}!")
+            flash(f"Hello, {user.username}!", "success")
             # return render_template('logged_in_home.html')
+            # the logged in home template was going to have all the parks showing, but that's an API call, which doesn't happen in a template. So I should do the API call here and pass into the template? Or would it be easier to just have a link to see all the parks on logged_in_home?
             # redirect to url that's logged in homepage and that would have api call
             # login is good for redirect,
             return redirect("/parks")
 
-    flash("Username and/or password are incorrect", 'danger')
-        # do i need to add code to make this display? the flash for a successful login doesn't work either
+        flash("Username and/or password are incorrect", 'danger')
+        # how is this different from the return render_templatee('/login') right below - isn't that what happens if login info is incorrect? why was this in the form.validate_on_submit section? does it just go there when it hits the breakpoint below? 
+        # breakpoint()
 
     return render_template('/login.html', form=form)
 
@@ -144,14 +155,16 @@ def logout():
     do_logout()
 
     flash("you have logged out", 'success')
-    # the logout doesn't work but the flash message doesn't show up
     return redirect("/login")
 
 
 @app.route('/parks')
 def show_parks():
-    endpoint = "https://developer.nps.gov/api/v1/parks?limit=60&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z"
-    req = urllib.request.Request(endpoint)
+    #endpoint = "parks?limit=60&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z"
+    # new
+    url = f"{NPS_GOV_BASE_URL}/parks?limit=60&API_KEY={NPS_GOV_API_KEY}"
+    print(url)
+    req = urllib.request.Request(url)
 
     # Execute request and parse response
     response = urllib.request.urlopen(req).read()
@@ -169,45 +182,23 @@ def show_parks():
             # for activity in activites:
                 # activityNames += (append activity name to empty string);
                 # then pass in the empty string to the park statement below
-
-
             park = Park(
                 id=place["id"], 
                 name=place["fullName"], 
                 code=place["parkCode"], 
-                description=place["description"], 
-                ent_fees_cost=place["entranceFees"][0]["cost"], 
-                ent_fees_description=place["entranceFees"][0]["description"], 
-                ent_fees_title=place["entranceFees"][0]["title"], 
-                # ent_passes_cost=["entrancePasses"][0]["cost"], 
-                # ent_passes_description=["entrancePasses"][0]["description"], 
-                # ent_passes_title=["entrancePasses"][0]["title"], 
-                # these are causing the issue 
-                # error is - 'string indices must be integers'
-                activity=place["activities"][0]["name"], 
-                state=place["states"], 
-                phone=place["contacts"]["phoneNumbers"][0]["phoneNumber"], 
-                directions_url=place["directionsUrl"], 
-                hours=place["operatingHours"][0]["description"], 
-                town=place["addresses"][0]["city"], 
-                image_title=place["images"][0]["title"], 
-                image_altText=place["images"][0]["altText"], 
-                image_url=place["images"][0]["url"], 
-                weather_info=place["weatherInfo"],)
-        
+                description=place["description"]
+            )
+            # pdb.set_trace()
+            # park = Park(id=place["id"], name=place["fullName"], code=place["parkCode"], description=place["description"], ent_fees_cost=place["entranceFees"][0]["cost"], ent_fees_description=place["entranceFees"][0]["description"], ent_fees_title=place["entranceFees"][0]["title"], ent_passes_cost=["entranceFees"][0]["cost"], ent_passes_description=["entranceFees"][0]["description"], ent_passes_title=["entranceFees"][0]["title"], activity=place["activities"]["name"], state=place["states"], phone=place["contacts"][0]["phoneNumbers"]["phoneNumber"], directions_url=place["directionsUrl"], hours=place["operatingHours"][0]["description"], town=place["addresses"]["city"], image_title=place["images"][0]["title"], image_altText=place["images"][0]["altText"], image_url=place["images"][0]["url"], weather_info=place["weatherInfo"])
 
             # so there's multiple activities per park. would i have to make an activities table to be able to display more than the first one's name? what about states? is it just a string with multiple state abbreviations?
             # nested ones aren't working bc i'm not telling it which one to grab
             #  standard hours is object not array, different loop
 
             park_array.append(park)
-            # could this be failing to append? getting an incorrect syntax error on it
+            
 
             db.session.commit()
-
-            # pdb.set_trace()
-
-            
         # should this be indented in the for loop?
         # **************
     
@@ -216,12 +207,13 @@ def show_parks():
     # db session commit here
 
 
-@app.route('/parks/<string:park_id>')
+@app.route('/parks/<int:park_id>')
 def park_info(park_id):
+    # *********** is this actually getting the park id from anywhere does it just say that?
 
 # should i do separate functions inside the route for the different API calls? return statement at the end of each function, then pass each returned object into the template? can you even do return statements and return render template in one route like that? probably Google function/Flask route with multiple API calls. maybe it's something like API call for activities data/activities array created/for loop for the activities data/same sequence for API call for campgrounds/in render template, activities_arr=activities_arr, campgrounds_arr=campgrounds_arr.
     park = Park.query.get_or_404(park_id)
-    pdb.set_trace()
+
     articlesEndpoint = (f"https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=1&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
     # ****** is that the right way to get the park id in there?
     # f string/string interprelation

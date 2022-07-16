@@ -59,10 +59,10 @@ class User(db.Model):
         unique=True,
     )
 
-    location = db.Column(
-        db.Text,
-        nullable=True,
-    )
+    # location = db.Column(
+    #     db.Text,
+    #     nullable=True,
+    # )
 
     password = db.Column(
         db.Text,
@@ -122,9 +122,10 @@ class Park(db.Model):
     __tablename__ = 'parks'
 
     id = db.Column(
-        db.Integer,
+        db.String(),
         primary_key=True,
     )
+    # change this to string and drop and re-create table again
 
     name = db.Column(
         db.Text,
@@ -148,12 +149,12 @@ class Park(db.Model):
 
     ent_fees_description = db.Column(
         db.Text,
-        nullable=False,
+        nullable=True,
     )
 
     ent_fees_title = db.Column(
         db.Text,
-        nullable=False,
+        nullable=True,
     )
 
     ent_passes_cost = db.Column(
@@ -216,9 +217,13 @@ class Park(db.Model):
         nullable=False,
     )
 
-    fees = db.Column(
-        db.Float,
-        # is Float right? could  do string just so I dontv lose formatting wiuth dollar signs
+    # fees = db.Column(
+    #     db.Float,
+    #     nullable=False,
+    # )
+
+    weather_info = db.Column(
+        db.Text,
         nullable=False,
     )
 
