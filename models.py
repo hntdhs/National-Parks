@@ -92,8 +92,13 @@ class User(db.Model):
             email=email,
             password=hashed_pwd,
         )
+        # with db.session.transaction:
 
         db.session.add(user)
+        db.session.commit()
+
+        # ACID - Atomicity, Consistency Isolation Duarability
+
         return user
 
     @classmethod

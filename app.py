@@ -97,7 +97,7 @@ def signup():
         
         # pdb.set_trace()
 
-        db.session.commit()
+        # db.session.commit()
 
         # except IntegrityError:
         #     flash("Username already taken", 'danger')
@@ -203,14 +203,15 @@ def show_parks():
             park_array.append(park)
             # could this be failing to append? getting an incorrect syntax error on it
 
-            db.session.commit()
+    
 
             # pdb.set_trace()
 
             
         # should this be indented in the for loop?
         # **************
-    
+    [db.session.add(park) for park in park_array]
+    db.session.commit()
     return render_template('/logged_in_home.html', park_array=park_array)
 
     # db session commit here
