@@ -9,45 +9,52 @@
 
 <h1>This is the page for {{ park.name }}</h1>
 
-<img src="{{ park.image_url }}" alt="{{ park.image_altText }}">
+<form method="POST" action="/parks/add_favorite/{{ park.id }}">
+    <button class="btn btn-sm">add to favorites</button>
+</form>
+
+<img src="{{ park.image_url }}" alt="{{ park.image_altText }}" class="park-image">
 {{ park.image_title }}
 
 
 <h2>{{ park.name }} is located in lovely {{ park.town }}, {{ park.state }}</h2>
 
-<p>{{ park.description }}</p>
+<p>{{ park.description }}</p><br>
 
 {{ park.ent_fees_cost }}
 {{ park.ent_fees_description }}
 {{ park.ent_fees_title }}
 {{ park.ent_passes_cost }}
 {{ park.ent_passes_description }}
-{{ park.ent_passes_title }}
+{{ park.ent_passes_title }} <br>
 
-This is one activity you can do in the park:
-{{ park.activity }}
+Here are some activities you can do in the park:<br>
+{% for activity in activityNames %}
+    {{ park.activity }}<br>
+{% endfor %}    
 
 Contact:
-{{ park.phone }}
+{{ park.phone }}<br>
 
 Would you like to know about the campsite options available at {{ park.name }}?
-<a href="/campgrounds.html">Find that info here!</a>
+<a href="/parks/campgrounds/{{ park.id }}">Find that info here!</a> <br>
+<!-- <a href="/parks/{{ park.id }}">{{ park.name }}</a><br> -->
 
 Find directions to the park here:
-<a href="{{ park.directions_url }}">{{ park.directions_url }}</a>
+<a href="{{ park.directions_url }}">{{ park.directions_url }}</a><br>
 
 What weather might one expect to find in {{ park.name }}? Well...
-{{ park.weather_info }}
+{{ park.weather_info }}<br>
 
 Park Hours:
-{{ park.hours }}
+{{ park.hours }}<br>
 
 
-{% for art in articles_array %}
-    <img src="{{ articles.image_url }}" alt="{{ articles.img_altText }}">
-    <h3>{{ articles.title }}</h3>
-    <a href="{{ articles.url }}">@{{ articles.title }}</a>
-    <p>{{ articles.description }}</p>
+{% for article in articles %}
+    <img src="{{ article.image_url }}" alt="{{ article.img_altText }}">
+    <h3>{{ article.title }}</h3>
+    <a href="{{ article.url }}">@{{ article.title }}</a>
+    <p>{{ article.description }}</p>
 {% endfor %}
 
 

@@ -4,7 +4,7 @@
 
 {% block content %}
 
-{% for park in park_array %}
+{% for park in parks %}
     <a href="/parks/{{ park.id }}">{{ park.name }}</a><br>
     {{ park.description }}<br>
 {% endfor %}

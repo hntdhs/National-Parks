@@ -1,22 +1,22 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
+# from sqlalchemy.orm import relationship
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 
-user_visited = db.table(
-    'user_visited',
-    db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
-    db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
-)
+# user_visited = db.table(
+#     'user_visited',
+#     db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
+#     db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
+# )
 
-user_favorited = db.table(
-    'user_favorited',
-    db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
-    db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
-)
+# user_favorited = db.table(
+#     'user_favorited',
+#     db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
+#     db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
+# )
 # the video I watched didn't have these as classes, but in Warbler they are
 
 # see around line 202 in warbler for adding relationships
@@ -59,15 +59,14 @@ class User(db.Model):
         unique=True,
     )
 
-    # location = db.Column(
-    #     db.Text,
-    #     nullable=True,
-    # )
-
     password = db.Column(
         db.Text,
         nullable=False,
     )
+
+    # visited = db.relationship("Visited_Park") 
+
+    favorited = db.relationship("Favorited_Park")
 
     # user_favorites = db.relationship(
     #     "User",
@@ -130,7 +129,6 @@ class Park(db.Model):
         db.String(),
         primary_key=True,
     )
-    # change this to string and drop and re-create table again
 
     name = db.Column(
         db.Text,
@@ -237,13 +235,16 @@ class Park(db.Model):
     # )
 
     # users = relationship('User')
+    # visited = db.relationship("Visited_Park") 
+
+    favorited = db.relationship("Favorited_Park")
 
 class Article(db.Model):
 
     __tablename__ = 'articles'
 
     id = db.Column(
-        db.Integer,
+        db.String(),
         primary_key=True,
     )
 
@@ -257,14 +258,17 @@ class Article(db.Model):
 
     description = db.Column(
         db.Text,
+        nullable=True,
     )
 
     image_url = db.Column(
         db.Text,
+        nullable=True,
     )
 
     image_altText = db.Column(
         db.Text,
+        nullable=True,
     )
 
 class Campground(db.Model):
@@ -272,7 +276,7 @@ class Campground(db.Model):
     __tablename__ = 'campgrounds'
 
     id = db.Column(
-        db.Integer,
+        db.String(),
         primary_key=True,
     )
 
@@ -281,45 +285,48 @@ class Campground(db.Model):
     )
 
     name = db.Column(
-        db.Text
-    )
-
-    description = db.Column(
-        db.Text
-    )
-
-    audio_description = db.Column(
-        db.Text
-    )
-
-    reservation_info = db.Column(
-        db.Text
-    )
-
-    reservation_url = db.Column(
-        db.Text
-    )
-    
-    image_title = db.Column(
-        db.Text
-    )
-    # ************* each iteration of Campground has 1 name, 1 url, 1 description, etc. But they have multiple images. Does it matter that there's only one column for image url if there's multiple images?
-
-    image_url = db.Column(
-        db.Text
-    )
-
-    image_altText = db.Column(
         db.Text,
     )
 
+    description = db.Column(
+        db.Text,
+    )
 
+    reservation_info = db.Column(
+        db.Text,
+    )
+
+    reservation_url = db.Column(
+        db.Text,
+    )
+
+    wheelchair = db.Column(
+        db.Text,
+    )
+    
+    # image_title = db.Column(
+    #     db.Text,
+    # )
+    # # ************* each iteration of Campground has 1 name, 1 url, 1 description, etc. But they have multiple images. Does it matter that there's only one column for image url if there's multiple images?
+
+    # image_url = db.Column(
+    #     db.Text,
+    # )
+
+    # image_altText = db.Column(
+    #     db.Text,
+    # )
 
 
 
 # class Visited_Park(db.Model):
 
 #     __tablename__ = 'visited'
+
+#     visited_park_id = db.Column(
+#         db.Integer,
+#         primary_key=True,
+#     )
 
 #     user_id = db.Column(
 #         db.Integer,
@@ -328,10 +335,40 @@ class Campground(db.Model):
 #     )
 
 #     parks_id = db.Column(
-#         db.Integer,
+#         db.String(),
 #         db.ForeignKey('parks.id', ondelete='CASCADE'),
 #         nullable=False,
 #     ) 
+
+#     user = db.relationship('User')
+#     park = db.relationship('Park')
+
+
+class Favorited_Park(db.Model):
+
+    __tablename__ = 'favorited'
+
+    favorited_park_id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    parks_id = db.Column(
+        db.String(),
+        db.ForeignKey('parks.id', ondelete='CASCADE'),
+        nullable=False,
+    ) 
+
+    user = db.relationship('User')
+    park = db.relationship('Park')
+
+
 
 
 

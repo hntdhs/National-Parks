@@ -4,17 +4,22 @@ from unicodedata import name
 
 import urllib.request, json
 
-from flask import Flask, redirect, render_template, flash, url_for, request, session, g
+from flask import Flask, redirect, render_template, flash, url_for, request, session, g, abort
 from flask_debugtoolbar import DebugToolbarExtension
-
+from sqlalchemy.exc import IntegrityError
+from flask_migrate import Migrate
 from models import db, connect_db, User, Park, Article, Campground
-# from models import Favorite
-# from models import Visited_Park,
+from models import Favorited_Park
+# from models import Visited_Park
 from forms import NewUserForm, LoginForm, UserEditForm
+from dotenv import load_dotenv
+load_dotenv()
 
 CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
+# db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
@@ -29,7 +34,7 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 connect_db(app)
 
-
+API_KEY = os.getenv('NPS_GOV_API_KEY')
 
 @app.before_request
 def add_user_to_g():
@@ -150,126 +155,107 @@ def logout():
 
 @app.route('/parks')
 def show_parks():
-    endpoint = "https://developer.nps.gov/api/v1/parks?limit=60&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z"
-    req = urllib.request.Request(endpoint)
-
-    # Execute request and parse response
-    response = urllib.request.urlopen(req).read()
-    data = json.loads(response.decode('utf-8'))
-
-    park_array = []
-    # Prepare and execute output
-    for place in data["data"]:
-        # pdb.set_trace()
-        if place["designation"] == "National Park":
-            # *******************
-        # print(place["fullName"])
-            # activityNames = ""
-            # activities = place[activities]
-            # for activity in activites:
-                # activityNames += (append activity name to empty string);
-                # then pass in the empty string to the park statement below
-
-
-            park = Park(
-                id=place["id"], 
-                name=place["fullName"], 
-                code=place["parkCode"], 
-                description=place["description"], 
-                ent_fees_cost=place["entranceFees"][0]["cost"], 
-                ent_fees_description=place["entranceFees"][0]["description"], 
-                ent_fees_title=place["entranceFees"][0]["title"], 
-                # ent_passes_cost=["entrancePasses"][0]["cost"], 
-                # ent_passes_description=["entrancePasses"][0]["description"], 
-                # ent_passes_title=["entrancePasses"][0]["title"], 
-                # these are causing the issue 
-                # error is - 'string indices must be integers'
-                activity=place["activities"][0]["name"], 
-                state=place["states"], 
-                phone=place["contacts"]["phoneNumbers"][0]["phoneNumber"], 
-                directions_url=place["directionsUrl"], 
-                hours=place["operatingHours"][0]["description"], 
-                town=place["addresses"][0]["city"], 
-                image_title=place["images"][0]["title"], 
-                image_altText=place["images"][0]["altText"], 
-                image_url=place["images"][0]["url"], 
-                weather_info=place["weatherInfo"],)
-        
-
-            # so there's multiple activities per park. would i have to make an activities table to be able to display more than the first one's name? what about states? is it just a string with multiple state abbreviations?
-            # nested ones aren't working bc i'm not telling it which one to grab
-            #  standard hours is object not array, different loop
-
-            park_array.append(park)
-            # could this be failing to append? getting an incorrect syntax error on it
-
-    
-
-            # pdb.set_trace()
-
-            
-        # should this be indented in the for loop?
-        # **************
-    [db.session.add(park) for park in park_array]
-    db.session.commit()
-    return render_template('/logged_in_home.html', park_array=park_array)
-
-    # db session commit here
+    return render_template('/logged_in_home.html', parks=Park.query.all())
+    # after switching over to the parks=Park.query, what is the point of park_array? maybe it's not necessary?
 
 
 @app.route('/parks/<string:park_id>')
 def park_info(park_id):
+    # seems to be working, clicked on the link for Biscayne and set_trace gave me bisc for park.code and the full name for park.name
 
-# should i do separate functions inside the route for the different API calls? return statement at the end of each function, then pass each returned object into the template? can you even do return statements and return render template in one route like that? probably Google function/Flask route with multiple API calls. maybe it's something like API call for activities data/activities array created/for loop for the activities data/same sequence for API call for campgrounds/in render template, activities_arr=activities_arr, campgrounds_arr=campgrounds_arr.
     park = Park.query.get_or_404(park_id)
-    pdb.set_trace()
-    articlesEndpoint = (f"https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=1&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
-    # ****** is that the right way to get the park id in there?
-    # f string/string interprelation
+    # pdb.set_trace()
+    articlesEndpoint = (f"https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=10&API_KEY={API_KEY}")
     req = urllib.request.Request(articlesEndpoint)
 
     # Execute request and parse response
     response = urllib.request.urlopen(req).read()
     data = json.loads(response.decode('utf-8'))
+    article_ids_in_db = [article.id for article in Article.query.all()]
 
     articles_array = []
 
     for art in data["data"]:
-        article = Article(id=art["id"], url=art["url"], title=art["title"], description=art["listingDescription"], image_url=art["listingImage"]["url"], image_altText=art["listingImage"]["altText"])
+        if art["id"] not in article_ids_in_db and len(art["relatedParks"]) == 1:
+            article = Article(id=art["id"], url=art["url"], title=art["title"], description=art["listingDescription"], image_url=art["listingImage"]["url"], image_altText=art["listingImage"]["altText"])
 
-        articles_array.append(article)
+            articles_array.append(article)
+            db.session.add(article)
 
-    return render_template('/individual_park.html', park=park, articles_array=articles_array)
+    db.session.commit()
+    return render_template('/parks/individual_park.html', park=park, articles=Article.query.all())
+    # is there going to be a problem here that I'm doing an Article.query.all, which would theoretically get every article for every park? should it be Article.query.park_id or whatever?
 
 
-@app.route('/campgrounds/<int:park_id>')
+@app.route('/parks/campgrounds/<string:park_id>')
 def show_campgrounds(park_id):
 
     park = Park.query.get_or_404(park_id)
 
-    campgroundsEndpoint = (f"https://developer.nps.gov/api/v1/campgrounds?parkCode={park.code}&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z")
+    campgroundsEndpoint = (f"https://developer.nps.gov/api/v1/campgrounds?parkCode={park.code}&API_KEY={API_KEY}")
     req = urllib.request.Request(campgroundsEndpoint)
 
     # Execute request and parse response
     response = urllib.request.urlopen(req).read()
     data = json.loads(response.decode('utf-8'))
+    campground_ids_in_db = [campground.id for campground in Campground.query.all()]
 
     for ground in data["data"]:
-        campground = Campground(id=ground["id"], url=ground["url"], name=ground["name"], description=ground["description"], audio_description=ground["audioDescription"], reservation_info=ground["reservationInfo"], reservation_url=ground["reservationUrl"], image_title=ground["images"]["title"], image_url=ground["images"]["url"], image_altText=ground["images"]["altText"])
+        if ground["id"] not in campground_ids_in_db:
+            campground = Campground(
+                id=ground["id"], 
+                url=ground["url"], 
+                name=ground["name"], 
+                description=ground["description"], 
+                reservation_info=ground["reservationInfo"], 
+                reservation_url=ground["reservationUrl"], 
+                wheelchair=ground["accessibility"]["wheelchairAccess"]
+                # image_title=ground["images"]["title"], 
+                # image_url=ground["images"]["url"],  
+                # image_altText=ground["images"]["altText"]
+            )
+        
+            db.session.add(campground)
 
-    return render_template('/campgrounds.html', park=park, campground=campground)
+    db.session.commit()
+    return render_template('/parks/campgrounds.html', park=park, campgrounds=Campground.query.all())
+    # the url in the browser doesn't have the park id, it's just campgrounds.html, whereas individual park page has the park id. /parks/campgrounds.html not found on server. 
+    # look at how the link is being made in logged in home.html
 
 
-# @app.route('/users/<int:user_id>/favorite_parks')
-# def show_favorites(user_id):
+@app.route('/users/<int:user_id>/favorite_parks', methods=["GET"])
+def show_favorites(user_id):
 
-#     if not g.user:
-#         flash("Access unauthorized.", "danger")
-#         return redirect("/")
-# # need to reference the relationship
-#     user = User.query.get_or_404(user_id)
-#     return render_template('users/favorites.html', user=user)
-# now the question is how to display in the template. or do I do something in the route to get that info?
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+# need to reference the relationship
+    user = User.query.get_or_404(user_id)
+    return render_template('users/favorites.html', user=user, favorites=user.favorited)
+
+@app.route('/parks/<string:park_id>/favorite', methods=["POST"])
+def add_favorite(park_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    favorited_park = Favorited_Park.query.get_or_404(park_id)
+    if favorited_park.user_id == g.user.id:
+        return abort(403)
+
+    user_favorites = g.user.favorited
+    # favorites?
+
+    if favorited_park in user_favorites:
+        g.user.favorited = [favorite for favorite in user_favorites if favorite != favorited_park]
+    else:
+        g.user.favorited.append(favorited_park)
+
+    db.session.commit()
+
+    return redirect("/")
+# in parks folder, though note in warbler the route is /messages/<int:message_id>/like, and there's nothing in the messages folder except new.html and show.html
 
 
 # @app.route('/visited_parks')
