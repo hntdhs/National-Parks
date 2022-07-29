@@ -30,7 +30,7 @@ db = SQLAlchemy()
 #         nullable=False,
 #     )
 
-#     parks_id = db.Column(
+#     parks_id =  db.Column(
 #         db.Integer,
 #         db.ForeignKey('parks.id', ondelete='CASCADE'),
 #         nullable=False,
@@ -346,29 +346,32 @@ class Campground(db.Model):
 
 class Favorited_Park(db.Model):
 
-    __tablename__ = 'favorited'
+    __tablename__ = 'favorited_park'
 
-    favorited_park_id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
 
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
+        db.ForeignKey('user.id', ondelete='CASCADE'),
+        primary_key=True
     )
 
     parks_id = db.Column(
         db.String(),
-        db.ForeignKey('parks.id', ondelete='CASCADE'),
-        nullable=False,
+        db.ForeignKey('park.id', ondelete='CASCADE'),
+        primary_key=True
     ) 
 
-    user = db.relationship('User')
-    park = db.relationship('Park')
+    user = db.relationship('User', back_populates="parks")
+    park = db.relationship('Park', back_populates="users")
+ 
 
+#  in Terminal: 
+# relationship 'Favorited_Park.user' will copy column users.id to column favorited.user_id, which conflicts with relationship(s): 'User.favorited' (copies users.id to favorited.user_id). If this is not the intention, consider if these relationships should be linked with back_populates
 
+# in browser:
+# sqlalchemy.exc.DataError: (psycopg2.errors.InvalidTextRepresentation) invalid input syntax for type integer: "F1CA951D-B7EC-4A7C-BB34-59BFCCDE980D"
+# LINE 1: ... description, image_url, "image_altText") VALUES ('F1CA951D-...
+# [SQL: INSERT INTO articles (id, url, title, description, image_url, "image_altText") VALUES (%(id)s, %(url)s, %(title)s, %(description)s, %(image_url)s, %(image_altText)s)]
 
 
 

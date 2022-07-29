@@ -12,6 +12,7 @@ from models import db, connect_db, User, Park, Article, Campground
 from models import Favorited_Park
 # from models import Visited_Park
 from forms import NewUserForm, LoginForm, UserEditForm
+# from load_parks import save_parks
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -155,6 +156,7 @@ def logout():
 
 @app.route('/parks')
 def show_parks():
+    # save_parks()
     return render_template('/logged_in_home.html', parks=Park.query.all())
     # after switching over to the parks=Park.query, what is the point of park_array? maybe it's not necessary?
 
@@ -176,7 +178,8 @@ def park_info(park_id):
     articles_array = []
 
     for art in data["data"]:
-        if art["id"] not in article_ids_in_db and len(art["relatedParks"]) == 1:
+        if art["id"] not in article_ids_in_db:
+        # if art["id"] not in article_ids_in_db and len(art["relatedParks"]) == 1:
             article = Article(id=art["id"], url=art["url"], title=art["title"], description=art["listingDescription"], image_url=art["listingImage"]["url"], image_altText=art["listingImage"]["altText"])
 
             articles_array.append(article)
@@ -233,14 +236,15 @@ def show_favorites(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('users/favorites.html', user=user, favorites=user.favorited)
 
-@app.route('/parks/<string:park_id>/favorite', methods=["POST"])
+@app.route('/parks/<string:park_id>/add_favorite', methods=["GET", "POST"])
 def add_favorite(park_id):
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    favorited_park = Favorited_Park.query.get_or_404(park_id)
+    favorited_park = Favorited_Park.query.filter(park_id)
+    # want to see if it's in db and if not add it
     if favorited_park.user_id == g.user.id:
         return abort(403)
 
@@ -255,6 +259,7 @@ def add_favorite(park_id):
     db.session.commit()
 
     return redirect("/")
+    # but I don't want to redirect them to main page - is there a way to just stay on the page? can i just not return anything?
 # in parks folder, though note in warbler the route is /messages/<int:message_id>/like, and there's nothing in the messages folder except new.html and show.html
 
 

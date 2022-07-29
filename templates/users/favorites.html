@@ -1,1 +1,16 @@
 <!-- displays all parks that are part of the favorites model, and links to each individual park page -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for favorited_park in favorites %}
+
+    <!-- in warbler: {% for followed_user in user.following %} -->
+    <!-- not sure if it would be park.image_url or favorited_park.image_url, etc. -->
+    <!-- in warbler:  -->
+    <!-- image, name, town, state -->
+
+{% endfor %}
+
+{% endblock %}

@@ -9,7 +9,7 @@
 
 <h1>This is the page for {{ park.name }}</h1>
 
-<form method="POST" action="/parks/add_favorite/{{ park.id }}">
+<form method="POST" action="/parks/{{ park.id }}/add_favorite">
     <button class="btn btn-sm">add to favorites</button>
 </form>
 

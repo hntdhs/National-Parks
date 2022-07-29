@@ -1,24 +1,28 @@
+import pdb
 import urllib
 import json
-
-from sqlalchemy import desc
+from os import environ
 from app import app
+from sqlalchemy import desc
 from models import db, Park
+
 
 
 def save_parks():
     # endpoint = "https://developer.nps.gov/api/v1/parks?limit=90&API_KEY=HCUiwHQkl2bavKC6YK6zCXUQTrOnhs6K3f2BZD7Z"
     
     # limit = 100
+    API_KEY = environ.get("NPS_GOV_API_KEY")
     
-    endpoint = "https://developer.nps.gov/api/v1/parks?limit=500&start=0&API_KEY={API_KEY}"
+    endpoint = f"https://developer.nps.gov/api/v1/parks?limit=500&start=0&API_KEY={API_KEY}"
     # won't go past 50 because that's the limit the API sets
+    
+    print(endpoint)
     req = urllib.request.Request(endpoint)
 
     # Execute request and parse response
     response = urllib.request.urlopen(req).read()
     data = json.loads(response.decode('utf-8'))
-    # import ipdb; ipdb.set_trace()
     park_ids_in_db = [park.id for park in Park.query.all()]
 
     park_array = []
@@ -68,3 +72,5 @@ def save_parks():
 if __name__ == "__main__":
     db.app = app
     save_parks()
+
+    # Why put this in a seperate script from app.py? Because we don't want to hit the NPS' API every time someone via our Flask app hits the parks endpoint. If 100 people do that, we'll be getting the same data each time, which is inefficient. Also API's have rate limits, and it'll start getting 429 codes, which means too many requests. A user would get a 500 internal server error. So if we load the data into the database in a separate script, it just hits the external API once, and our endpoint just queries the database to get that information.
