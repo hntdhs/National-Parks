@@ -2,11 +2,12 @@ import unittest
 from unittest import TestCase
 import os
 
-from flask_migrate import upgrade
+# from flask_migrate import upgrade
+from flask_migrate import Migrate
 
 from models import db, User, Park, Favorited_Park
 
-os.environ['DATABASE_URL'] = "postgresql:///parks-test"
+os.environ['DATABASE_URL'] = "postgresql:///parks_test"
 
 from app import app
 
@@ -16,7 +17,9 @@ class TestAddFavorite(TestCase):
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL_TEST")
         app.config['TESTING'] = True
         with app.app_context():
-            upgrade()
+            # upgrade()
+            # Migrate(app, db)
+            db.create_all()
 
     @classmethod
     def tearDownClass(cls):
@@ -43,7 +46,7 @@ class TestAddFavorite(TestCase):
         db.session.commit()
         db.session.remove()
 
-    def add_favorite_test(self):
+    def test_add_favorite(self):
         favorited_park = Favorited_Park.query.filter(Favorited_Park.parks_id==self.park.id, Favorited_Park.user_id==self.u.id).first()
         # first method gets first item from an iterable that matches a condition
         self.assertEqual(favorited_park, None)
