@@ -19,6 +19,7 @@ CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 # db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+server = app.server
 
 # from heroku document
 uri = os.environ.get('DATABASE_URL', 'postgresql:///parks_db')
