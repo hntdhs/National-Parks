@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 # from sqlalchemy.orm import relationship
 
 bcrypt = Bcrypt()
-db = SQLAlchemy()
+db = SQLAlchemy(session_options={"expire_on_commit": False})
 
 
 class User(db.Model):
@@ -176,17 +176,17 @@ class Park(db.Model):
 
     image_title = db.Column(
         db.Text,
-        nullable=False,
+        nullable=True,
     )
 
     image_altText = db.Column(
         db.Text,
-        nullable=False,
+        nullable=True,
     )
 
     image_url = db.Column(
         db.Text,
-        nullable=False,
+        nullable=True,
     )
 
     # fees = db.Column(
@@ -196,7 +196,7 @@ class Park(db.Model):
 
     weather_info = db.Column(
         db.Text,
-        nullable=False,
+        nullable=True,
     )
 
     # articles = db.relationship(

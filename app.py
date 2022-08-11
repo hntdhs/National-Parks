@@ -28,6 +28,7 @@ if uri.startswith("postgres://"):
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
+print(uri)
 app.config['SQLALCHEMY_DATABASE_URI'] = uri 
 # (os.environ.get('DATABASE_URL', 'postgresql:///parks_db'))
 # also from heroku doc:
@@ -37,7 +38,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
-toolbar = DebugToolbarExtension(app)
+if not os.environ.get('TESTING'):
+    toolbar = DebugToolbarExtension(app)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 connect_db(app)
@@ -227,7 +229,6 @@ def show_favorites():
 
 @app.route('/parks/<string:park_id>/add_favorite', methods=["GET", "POST"])
 def add_favorite(park_id):
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
