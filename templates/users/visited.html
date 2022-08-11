@@ -1,1 +1,26 @@
 <!-- displays all parks that are part of the visited model, and links to each individual park page -->
+
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if visited %}
+<h1>Here are the parks you have visited:</h1>
+    {% for visited_park in visited %}
+        <h3>{{visited_park.park.name}}</h3>
+        <form method="POST" action="/users/{{ visited_park.park.id }}/remove-visited">
+            <button class="btn btn-primary btn-sm">Remove From Visited</button>
+         </form>
+
+    {% endfor %}
+
+    {% else %}
+
+    <h1>You have not visited any parks</h1>
+
+{% endif %}
+
+<a href="/parks">Back to main parks page</a>
+
+{% endblock %}

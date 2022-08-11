@@ -6,37 +6,6 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 
-# user_visited = db.table(
-#     'user_visited',
-#     db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
-#     db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
-# )
-
-# user_favorited = db.table(
-#     'user_favorited',
-#     db.Column('user_id', db.Integer, db.ForeignKey('user_id')),
-#     db.Column('park_id', db.Integer, db.ForeignKey('park_id'))
-# )
-# the video I watched didn't have these as classes, but in Warbler they are
-
-# see around line 202 in warbler for adding relationships
-# class Favorite(db.Model):
-
-#     __tablename__ = 'favorites'
-
-#     user_id = db.Column(
-#         db.Integer,
-#         db.ForeignKey('users.id', ondelete='CASCADE'),
-#         nullable=False,
-#     )
-
-#     parks_id =  db.Column(
-#         db.Integer,
-#         db.ForeignKey('parks.id', ondelete='CASCADE'),
-#         nullable=False,
-#     ) 
-
-
 class User(db.Model):
     """User in the system."""
 
@@ -66,7 +35,7 @@ class User(db.Model):
 
     # visited = db.relationship("Visited_Park") 
 
-    favorited = db.relationship("Favorited_Park")
+    #favorited = db.relationship("Favorited_Park")
 
     # user_favorites = db.relationship(
     #     "User",
@@ -237,7 +206,7 @@ class Park(db.Model):
     # users = relationship('User')
     # visited = db.relationship("Visited_Park") 
 
-    favorited = db.relationship("Favorited_Park")
+    #favorited = db.relationship("Favorited_Park")
 
 class Article(db.Model):
 
@@ -271,6 +240,12 @@ class Article(db.Model):
         nullable=True,
     )
 
+    park_id = db.Column(
+        db.String(),
+        db.ForeignKey('parks.id', ondelete='CASCADE'),
+        primary_key=True
+    ) 
+
 class Campground(db.Model):
 
     __tablename__ = 'campgrounds'
@@ -300,7 +275,7 @@ class Campground(db.Model):
         db.Text,
     )
 
-    wheelchair = db.Column(
+    wheelchair_access = db.Column(
         db.Text,
     )
     
@@ -319,50 +294,46 @@ class Campground(db.Model):
 
 
 
-# class Visited_Park(db.Model):
+class Visited_Park(db.Model):
 
-#     __tablename__ = 'visited'
-
-#     visited_park_id = db.Column(
-#         db.Integer,
-#         primary_key=True,
-#     )
-
-#     user_id = db.Column(
-#         db.Integer,
-#         db.ForeignKey('users.id', ondelete='CASCADE'),
-#         nullable=False,
-#     )
-
-#     parks_id = db.Column(
-#         db.String(),
-#         db.ForeignKey('parks.id', ondelete='CASCADE'),
-#         nullable=False,
-#     ) 
-
-#     user = db.relationship('User')
-#     park = db.relationship('Park')
-
-
-class Favorited_Park(db.Model):
-
-    __tablename__ = 'favorited_park'
+    __tablename__ = 'visited'
 
 
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey('user.id', ondelete='CASCADE'),
+        db.ForeignKey('users.id', ondelete='CASCADE'),
         primary_key=True
     )
 
     parks_id = db.Column(
         db.String(),
-        db.ForeignKey('park.id', ondelete='CASCADE'),
+        db.ForeignKey('parks.id', ondelete='CASCADE'),
         primary_key=True
     ) 
 
-    user = db.relationship('User', back_populates="parks")
-    park = db.relationship('Park', back_populates="users")
+    user = db.relationship('User', backref="visited")
+    park = db.relationship('Park', backref="visited")
+
+
+class Favorited_Park(db.Model):
+
+    __tablename__ = 'favorited'
+
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        primary_key=True
+    )
+
+    parks_id = db.Column(
+        db.String(),
+        db.ForeignKey('parks.id', ondelete='CASCADE'),
+        primary_key=True
+    ) 
+
+    user = db.relationship('User', backref="favorited")
+    park = db.relationship('Park', backref="favorited")
  
 
 #  in Terminal: 

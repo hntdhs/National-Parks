@@ -1,4 +1,4 @@
-import os
+import os, re
 import pdb
 from unicodedata import name
 
@@ -8,9 +8,7 @@ from flask import Flask, redirect, render_template, flash, url_for, request, ses
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from flask_migrate import Migrate
-from models import db, connect_db, User, Park, Article, Campground
-from models import Favorited_Park
-# from models import Visited_Park
+from models import db, connect_db, User, Park, Article, Campground, Favorited_Park, Visited_Park
 from forms import NewUserForm, LoginForm, UserEditForm
 # from load_parks import save_parks
 from dotenv import load_dotenv
@@ -22,9 +20,18 @@ app = Flask(__name__)
 # db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+# from heroku document
+uri = os.environ.get('DATABASE_URL', 'postgresql:///parks_db')
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+# rest of connection code using the connection string `uri`
+
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
-app.config['SQLALCHEMY_DATABASE_URI'] = (os.environ.get('DATABASE_URL', 'postgresql:///parks_db'))
+app.config['SQLALCHEMY_DATABASE_URI'] = uri 
+# (os.environ.get('DATABASE_URL', 'postgresql:///parks_db'))
+# also from heroku doc:
+# app.config['SQLALCHEMY_DATABASE_URI'] = uri
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -36,6 +43,7 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 connect_db(app)
 
 API_KEY = os.getenv('NPS_GOV_API_KEY')
+WEATHER_KEY = os.getenv("WEATHER_KEY")
 
 @app.before_request
 def add_user_to_g():
@@ -65,20 +73,11 @@ def homepage():
     """first page user sees, allows user to either sign up or log in"""
 
     if g.user:
-        # followed parks = [list comprehension], parks wishlist = [list comprehension], pass into the template below
-        return render_template('logged_in_home.html')
+        return redirect("/parks")
 
     else:
         return render_template('no_user_home.html')
 
-# @app.route('/national-parks', methods=["GET"])
-# def getNationalParks():
-#     """
-#         - Hits the external API to get all the parks
-#         - Filter the parks to only include National Parks
-#         - Return the National Parks
-#     """
-#     return 'Works!'
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
@@ -94,21 +93,11 @@ def signup():
 
     form = NewUserForm()
     if form.validate_on_submit():
-        # try:
         user = User.signup(
             username=form.username.data,
             password=form.password.data,
             email=form.email.data,
             )
-        
-        # pdb.set_trace()
-
-        # db.session.commit()
-
-        # except IntegrityError:
-        #     flash("Username already taken", 'danger')
-        #     return render_template('users/signup.html', form=form)
-        # ***********************
 
         do_login(user)
 
@@ -131,13 +120,10 @@ def login():
         if user:
             do_login(user)
             flash(f"Hello, {user.username}!")
-            # return render_template('logged_in_home.html')
-            # redirect to url that's logged in homepage and that would have api call
             # login is good for redirect,
             return redirect("/parks")
 
-    flash("Username and/or password are incorrect", 'danger')
-        # do i need to add code to make this display? the flash for a successful login doesn't work either
+        flash("Username and/or password are incorrect", 'danger')
 
     return render_template('/login.html', form=form)
 
@@ -146,11 +132,9 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS
     do_logout()
 
     flash("you have logged out", 'success')
-    # the logout doesn't work but the flash message doesn't show up
     return redirect("/login")
 
 
@@ -158,36 +142,43 @@ def logout():
 def show_parks():
     # save_parks()
     return render_template('/logged_in_home.html', parks=Park.query.all())
-    # after switching over to the parks=Park.query, what is the point of park_array? maybe it's not necessary?
 
 
 @app.route('/parks/<string:park_id>')
 def park_info(park_id):
-    # seems to be working, clicked on the link for Biscayne and set_trace gave me bisc for park.code and the full name for park.name
 
     park = Park.query.get_or_404(park_id)
-    # pdb.set_trace()
-    articlesEndpoint = (f"https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=10&API_KEY={API_KEY}")
-    req = urllib.request.Request(articlesEndpoint)
+    article_ids_in_db = [article.id for article in Article.query.filter()]
+    
+    if not article_ids_in_db:
+        articlesEndpoint = (f"https://developer.nps.gov/api/v1/articles?parkCode={park.code}&limit=10&API_KEY={API_KEY}")
+        req = urllib.request.Request(articlesEndpoint)
 
-    # Execute request and parse response
-    response = urllib.request.urlopen(req).read()
-    data = json.loads(response.decode('utf-8'))
-    article_ids_in_db = [article.id for article in Article.query.all()]
+        # Execute request and parse response
+        response = urllib.request.urlopen(req).read()
+        data = json.loads(response.decode('utf-8'))
+        
 
-    articles_array = []
+        articles_array = []
 
-    for art in data["data"]:
-        if art["id"] not in article_ids_in_db:
-        # if art["id"] not in article_ids_in_db and len(art["relatedParks"]) == 1:
-            article = Article(id=art["id"], url=art["url"], title=art["title"], description=art["listingDescription"], image_url=art["listingImage"]["url"], image_altText=art["listingImage"]["altText"])
+        for art in data["data"]:
+            if art["id"] not in article_ids_in_db:
+            # if art["id"] not in article_ids_in_db and len(art["relatedParks"]) == 1:
+                article = Article(id=art["id"], url=art["url"], title=art["title"], description=art["listingDescription"], image_url=art["listingImage"]["url"], image_altText=art["listingImage"]["altText"], park_id=park_id)
 
-            articles_array.append(article)
-            db.session.add(article)
+                articles_array.append(article)
+                db.session.add(article)
 
-    db.session.commit()
+        db.session.commit()
+
+    # weather_API_town = park.town.replace(" ", "%")
+    # weatherEndpoint = (f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{weather_API_town}?unitGroup=us&key={WEATHER_KEY}")
+    # weather_req = urllib.request.Request(weatherEndpoint)
+    # weather_response = urllib.request.urlopen(weather_req).read()
+    # weather_data = json.loads(weather_response.decode('utf-8'))
+    # max = weather_data["days"][0]["tempmax"]
+
     return render_template('/parks/individual_park.html', park=park, articles=Article.query.all())
-    # is there going to be a problem here that I'm doing an Article.query.all, which would theoretically get every article for every park? should it be Article.query.park_id or whatever?
 
 
 @app.route('/parks/campgrounds/<string:park_id>')
@@ -222,19 +213,17 @@ def show_campgrounds(park_id):
 
     db.session.commit()
     return render_template('/parks/campgrounds.html', park=park, campgrounds=Campground.query.all())
-    # the url in the browser doesn't have the park id, it's just campgrounds.html, whereas individual park page has the park id. /parks/campgrounds.html not found on server. 
-    # look at how the link is being made in logged in home.html
 
 
-@app.route('/users/<int:user_id>/favorite_parks', methods=["GET"])
-def show_favorites(user_id):
+@app.route('/users/favorites', methods=["GET"])
+def show_favorites():
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 # need to reference the relationship
-    user = User.query.get_or_404(user_id)
-    return render_template('users/favorites.html', user=user, favorites=user.favorited)
+    #user = User.query.get_or_404(user_id)
+    return render_template('users/favorites.html', favorites=g.user.favorited)
 
 @app.route('/parks/<string:park_id>/add_favorite', methods=["GET", "POST"])
 def add_favorite(park_id):
@@ -243,27 +232,76 @@ def add_favorite(park_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    favorited_park = Favorited_Park.query.filter(park_id)
-    # want to see if it's in db and if not add it
-    if favorited_park.user_id == g.user.id:
-        return abort(403)
+    favorited_park = Favorited_Park.query.filter(Favorited_Park.parks_id==park_id, Favorited_Park.user_id==g.user.id).first()
 
-    user_favorites = g.user.favorited
-    # favorites?
+    if not favorited_park:
+        favorited = Favorited_Park(parks_id=park_id, user_id=g.user.id)
+        db.session.add(favorited)
 
-    if favorited_park in user_favorites:
-        g.user.favorited = [favorite for favorite in user_favorites if favorite != favorited_park]
-    else:
-        g.user.favorited.append(favorited_park)
+    flash("Park added to favorites")
 
     db.session.commit()
 
-    return redirect("/")
-    # but I don't want to redirect them to main page - is there a way to just stay on the page? can i just not return anything?
-# in parks folder, though note in warbler the route is /messages/<int:message_id>/like, and there's nothing in the messages folder except new.html and show.html
+    return redirect(f"/parks/{park_id}")
 
 
-# @app.route('/visited_parks')
-# def show_favorites():
-#     # query the database to find any parks the user has visited, otherwise show message that they haven't visited any yet
-# render template visited.html
+@app.route('/users/<string:parks_id>/remove-favorite', methods=["GET", "POST"])
+def unfavorite(parks_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user_id=g.user.id
+    favorited_park = Favorited_Park.query.filter(Favorited_Park.parks_id==parks_id, Favorited_Park.user_id==user_id).first()
+    db.session.delete(favorited_park)
+    #g.user.favorited.remove(favorited_park)
+    db.session.commit()
+
+    return redirect(f"/users/favorites")
+
+
+@app.route('/users/visited', methods=["GET"])
+def show_visited():
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    return render_template('users/visited.html', visited=g.user.visited)
+
+
+@app.route('/parks/<string:park_id>/add_visited', methods=["GET", "POST"])
+def add_visited(park_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    visited_park = Visited_Park.query.filter(Visited_Park.parks_id==park_id, Visited_Park.user_id==g.user.id).first()
+
+    if not visited_park:
+        visited = Visited_Park(parks_id=park_id, user_id=g.user.id)
+        db.session.add(visited)
+
+    flash("Park added to your collection of visited parks")
+
+    db.session.commit()
+
+    return redirect(f"/parks/{park_id}")
+
+
+@app.route('/users/<string:parks_id>/remove-visited', methods=["GET", "POST"])
+def unvisit(parks_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user_id=g.user.id
+    visited_park = Visited_Park.query.filter(Visited_Park.parks_id==parks_id, Visited_Park.user_id==user_id).first()
+    db.session.delete(visited_park)
+    #g.user.favorited.remove(favorited_park)
+    db.session.commit()
+
+    return redirect(f"/users/visited")

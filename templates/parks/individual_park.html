@@ -10,8 +10,14 @@
 <h1>This is the page for {{ park.name }}</h1>
 
 <form method="POST" action="/parks/{{ park.id }}/add_favorite">
-    <button class="btn btn-sm">add to favorites</button>
+    <button class="btn btn-primary btn-block btn-md">add to favorites</button>
 </form>
+
+<form method="POST" action="/parks/{{ park.id }}/add_visited">
+    <button class="btn btn-primary btn-block btn-md">add to visited</button>
+</form>
+
+<a href="/parks">Back to main parks page</a>
 
 <img src="{{ park.image_url }}" alt="{{ park.image_altText }}" class="park-image">
 {{ park.image_title }}
@@ -21,17 +27,18 @@
 
 <p>{{ park.description }}</p><br>
 
-{{ park.ent_fees_cost }}
-{{ park.ent_fees_description }}
-{{ park.ent_fees_title }}
+Entrance fees<br> 
+{{ park.ent_fees_title }}: {{ park.ent_fees_cost }}<br>
+({{ park.ent_fees_description }})<br>
 {{ park.ent_passes_cost }}
 {{ park.ent_passes_description }}
 {{ park.ent_passes_title }} <br>
 
-Here are some activities you can do in the park:<br>
-{% for activity in activityNames %}
+Here are some activities you can do in the park:
+{{ park.activity }}<br>
+<!-- {% for activity in activityNames %}
     {{ park.activity }}<br>
-{% endfor %}    
+{% endfor %}     -->
 
 Contact:
 {{ park.phone }}<br>

@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Photos</title>
+  <title>National Parks Database</title>
 
   <link rel="stylesheet"
         href="https://unpkg.com/bootstrap/dist/css/bootstrap.css">
@@ -25,8 +25,8 @@
                   {% if g.user %}
                     <!-- <img src="/static/images/mountain.png" alt="logo"> -->
                     <span>National Parks</span>
-                    <a href="/favorites">See Your Favorite Parks</a>
-                    <a href="/visited">See Parks You've Visited</a>
+                    <a href="/users/favorites">See Your Favorite Parks</a>
+                    <a href="/users/visited">See Parks You've Visited</a>
                     <a href="/logout">Logout</a>
                   {% endif %}
                   {% if false %}
@@ -37,7 +37,15 @@
             </div>
       </nav>
            
-
+      {% block messages %}
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      {% endblock %}
 
       {% block content %}
       {% endblock %}

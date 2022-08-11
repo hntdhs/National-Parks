@@ -4,13 +4,26 @@
 
 {% block content %}
 
-{% for favorited_park in favorites %}
+{% if favorites %}
+    {% for favorited_park in favorites %}
 
-    <!-- in warbler: {% for followed_user in user.following %} -->
+    <h3>{{favorited_park.park.name}}</h3>
+    <!-- in warbler: -->
     <!-- not sure if it would be park.image_url or favorited_park.image_url, etc. -->
     <!-- in warbler:  -->
     <!-- image, name, town, state -->
+    <form method="POST" action="/users/{{ favorited_park.park.id }}/remove-favorite">
+       <button class="btn btn-primary btn-sm">Remove From Favorites</button>
+    </form>
 
-{% endfor %}
+    {% endfor %}
+
+{% else %}
+
+    <h1>You have not favorited any parks</h1>
+
+{% endif %}
+
+<a href="/parks">Back to main parks page</a>
 
 {% endblock %}
