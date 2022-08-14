@@ -18,23 +18,3 @@
 
 
 {% endblock %}
-
-{% if campgrounds %}
-    {% for campground in campgrounds %}
-
-        {{ campground.name }}<br>
-        <a href="{{ campground.url }}">Click here for {{ park.name }}'s official site for {{ campground.name }}</a><br>
-        {{ campground.url }}<br>
-        {{ campground.description }}<br>
-        {{ campground.wheelchair }}<br>
-        {{ campground.reservation_info }}<br>
-        <a href="{{ campground.reservation_url }}">Click here to make a reservation for {{ campground.name }}</a><br>
-        <p>see official park website for information on amenities such as restrooms, showers, internet availability, and more</p>
-
-    {% endfor %}
-
-{% else %}
-
-    <h1>No campgrounds found at {{ park.name }}</h1>
-
-{% endif %}

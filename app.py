@@ -27,12 +27,10 @@ if uri.startswith("postgres://"):
 # rest of connection code using the connection string `uri`
 
 # Get DB_URI from environ variable (useful for production/testing) or,
-# if not set there, use development local db.
+# if not set there, use develherokuopment local db.
 print(uri)
 app.config['SQLALCHEMY_DATABASE_URI'] = uri 
 # (os.environ.get('DATABASE_URL', 'postgresql:///parks_db'))
-# also from heroku doc:
-# app.config['SQLALCHEMY_DATABASE_URI'] = uri
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False

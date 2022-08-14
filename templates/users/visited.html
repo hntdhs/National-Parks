@@ -6,16 +6,18 @@
 {% block content %}
 
 {% if visited %}
-<h1>Here are the parks you have visited:</h1>
+    <h1>Here are the parks you have visited:</h1>
     {% for visited_park in visited %}
         <h3>{{visited_park.park.name}}</h3>
+        <h4>{{ visited_park.park.town }}, {{ visited_park.park.state }}</h4>
+        <a href="/parks/{{ visited_park.park.id }}">{{ visited_park.park.name }}</a>
         <form method="POST" action="/users/{{ visited_park.park.id }}/remove-visited">
             <button class="btn btn-primary btn-sm">Remove From Visited</button>
-         </form>
+        </form>
 
     {% endfor %}
 
-    {% else %}
+{% else %}
 
     <h1>You have not visited any parks</h1>
 
