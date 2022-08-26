@@ -5,36 +5,49 @@
   <meta charset="UTF-8">
   <title>National Parks Database</title>
 
-  <link rel="stylesheet"
-        href="https://unpkg.com/bootstrap/dist/css/bootstrap.css">
-  <script src="https://unpkg.com/jquery"></script>
-  <script src="https://unpkg.com/popper"></script>
-  <script src="https://unpkg.com/bootstrap"></script>
+  <!-- Mobile Specific Metas -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="author" content="">
+  <meta name="generator" content="">
 
-  <link rel="stylesheet"
-        href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
-  <link rel="stylesheet" href="/static/stylesheets/style.css">
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/x-icon" href="/static/images/favicon.png" />
+
+  <!-- PLUGINS CSS STYLE -->
+  <link rel="stylesheet" href="/static/plugins/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/plugins/themify-icons/themify-icons.css">
+
+  <!-- CUSTOM CSS -->
+  <link href="/static/stylesheets/styles.css" rel="stylesheet">
+
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
-    
-      <nav class="navbar navbar-expand">
-            <div class="container-fluid">
-              <div class="navbar-header">
-                <a href="/" class="navbar-brand"></a>
-                  {% if g.user %}
-                    <!-- <img src="/static/images/mountain.png" alt="logo"> -->
-                    <span>National Parks</span>
-                    <a href="/users/favorites">See Your Favorite Parks</a>
-                    <a href="/users/visited">See Parks You've Visited</a>
-                    <a href="/logout">Logout</a>
-                  {% endif %}
-                  {% if false %}
-                    <img src="/static/images/mountain.png" alt="logo">
-                    <h1>Welcome to the Database</h1>
-                  {% endif %} 
-              </div>
-            </div>
+
+      <nav class="navbar main-nav navbar-expand-lg px-2 px-sm-0 py-2 py-lg-0">
+        <div class="container">
+          <a class="navbar-brand" href="/">National Park</a>
+          <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="ti-menu"></span>
+          </button>
+          <div class="navbar-collapse collapse" id="navbarNav" style="">
+            <ul class="navbar-nav ml-auto">
+              {% if g.user %}
+                <li class="nav-item">
+                  <a class="nav-link" href="/users/favorites">See Your Favorite Parks</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/users/visited">See Parks You've Visited</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/logout">Logout</a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
       </nav>
            
       {% block messages %}
@@ -49,5 +62,10 @@
 
       {% block content %}
       {% endblock %}
+
+  <!-- JAVASCRIPTS -->
+  <script src="plugins/jquery/jquery.min.js"></script>
+  <script src="plugins/bootstrap/bootstrap.min.js"></script>
+  <script src="js/script.js"></script>
 </body>
 </html>

@@ -3,22 +3,58 @@
 {% block content %}
 
 {% if campgrounds %}
-    {% for campground in campgrounds %}
 
-        {{ campground.name }}<br>
-        <a href="{{ campground.url }}">Click here for {{ park.name }}'s official site for {{ campground.name }}</a><br>
-        {{ campground.url }}<br>
-        {{ campground.description }}<br>
-        {{ campground.wheelchair }}<br>
-        {{ campground.reservation_info }}<br>
-        <a href="{{ campground.reservation_url }}">Click here to make a reservation for {{ campground.name }}</a><br>
-        <p>see official park website for information on amenities such as restrooms, showers, internet availability, and more</p>
+<section class="section page-title">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8 m-auto">
+                    <!-- Page Title -->
+                    <h1>Camp Grounds</h1>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    {% endfor %}
+    <section class="job-list section pt-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-lg-10 m-auto">
+                    <div class="block">
+                        {% for campground in campgrounds %}
+                            <!-- parks List -->
+                            <div class="job">
+                                <div class="content">
+                                    <!-- Campground Title -->
+                                    <h3>{{campground.name}}</h3>
+                                    <!-- Location -->
+                                    <p>
+                                        {{ campground.description }}<br>
+                                        {{ campground.wheelchair }}<br>
+                                        <b>{{ campground.reservation_info }}</b>
+                                    </p>
+                                    <p>see official park website for information on amenities such as restrooms, showers, internet availability, and more</p>
 
-{% else %}
-
-    <h1>No campgrounds found at {{ park.name }}</h1>
+                                </div>
+                                <div class="apply-button">
+                                    <a href="{{ campground.url }}" class="btn btn-main-sm">Click here for {{ park.name }}'s official site for {{ campground.name }}</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% else %}
+    <section class="section page-title">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8 m-auto">
+                    <h1>No campgrounds found at {{ park.name }}</h1>
+                </div>
+            </div>
+        </div>
+    </section>
 
 {% endif %}
 

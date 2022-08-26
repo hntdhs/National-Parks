@@ -4,17 +4,37 @@
 
 {% block content %}
 
-{% if parks %}
-    {% for park in parks %}
-        <a href="/parks/{{ park.id }}">{{ park.name }}</a><br>
-        {{ park.description }}<br>
-    {% endfor %}
 
-{% else %}
-    <h1>no parks</h1>
+<section class="post-grid section pt-0">
+    <div class="container">
+        <div class="row">
+        {% if parks %}
+            {% for park in parks %}
+                <div class="col-lg-4 col-md-6">
+                <!-- Park -->
+                <article class="post-sm">
+                    <!-- park Main Image -->
+                    <div class="post-thumb">
+                        <a href="/parks/{{ park.id }}"><img class="w-100" src="{{ park.image_url }}" alt="{{ park.image_altText }}"></a>       
+                    </div>
+                    <!-- park Title -->
+                    <div class="post-title">
+                        <h3><a href="/parks/{{ park.id }}">{{ park.name }}</a></h3>
+                    </div>
 
-{% endif %}
+                    <!-- Park Description -->
+                    <div class="post-details">
+                        <p>{{ park.description }}</p>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
 
-
+        {% else %}
+            <h1>No parks Found</h1>
+        {% endif %}
+        </div>
+    </div>
+</section>
 
 {% endblock %}

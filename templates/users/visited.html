@@ -6,23 +6,66 @@
 {% block content %}
 
 {% if visited %}
-    <h1>Here are the parks you have visited:</h1>
-    {% for visited_park in visited %}
-        <h3>{{visited_park.park.name}}</h3>
-        <h4>{{ visited_park.park.town }}, {{ visited_park.park.state }}</h4>
-        <a href="/parks/{{ visited_park.park.id }}">{{ visited_park.park.name }}</a>
-        <form method="POST" action="/users/{{ visited_park.park.id }}/remove-visited">
-            <button class="btn btn-primary btn-sm">Remove From Visited</button>
-        </form>
+    <section class="section page-title">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8 m-auto">
+                    <!-- Page Title -->
+                    <h1>Your Visited Parks</h1>
+                    <!-- Page Description -->
+                    <p>Here are the parks you have visited:</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    {% endfor %}
+    <section class="job-list section pt-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-lg-10 m-auto">
+                    <div class="block">
+                        <div class="title text-center">
+                            <h2>Parks List</h2>
+                        </div>
 
-{% else %}
-
-    <h1>You have not visited any parks</h1>
+                        {% for visited_park in visited %}
+                            <!-- parks List -->
+                            <div class="job">
+                                <div class="content">
+                                    <!-- Park Title -->
+                                    <h3>{{visited_park.park.name}}</h3>
+                                    <!-- Location -->
+                                    <p>{{ visited_park.park.town }}, {{ visited_park.park.state }}</p>
+                                </div>
+                                <!-- View Button -->
+                                <div class="apply-button">
+                                    <form method="POST" action="/users/{{ visited_park.park.id }}/remove-visited">
+                                        <button href="#" class="btn btn-danger">Remove From Visited</button>
+                                    </form>
+                                </div>
+                                <div class="apply-button">
+                                    <a href="/parks/{{ visited_park.park.id }}" class="btn btn-main-sm">View {{ visited_park.park.name }}</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <a class="mt-3 btn btn-main-md" href="/parks">Back to main parks page</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% else %}
+    <section class="section page-title">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-8 m-auto">
+                    <h1>You have not visited any parks</h1>
+                </div>
+            </div>
+        </div>
+    </section>
 
 {% endif %}
-
-<a href="/parks">Back to main parks page</a>
-
+                    
 {% endblock %}
+
