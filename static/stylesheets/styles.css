@@ -1885,3 +1885,9 @@ hr {
   }
 }
 /*# sourceMappingURL=style.css.map */
+
+
+.btn-rounded-icon {
+    color: #000;
+    border: 1px solid #000;
+}
