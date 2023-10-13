@@ -38,11 +38,11 @@
                                 <!-- View Button -->
                                 <div class="apply-button">
                                     <form method="POST" action="/users/{{ favorited_park.park.id }}/remove-favorite">
-                                        <button href="#" class="btn btn-danger">Remove From Favorites</button>
+                                        <button href="#" class="btn btn-danger btn-large">Remove From Favorites</button>
                                     </form>
                                 </div>
                                 <div class="apply-button">
-                                    <a href="/parks/{{ favorited_park.park.id }}" class="btn btn-main-sm">View {{ favorited_park.park.name }}</a>
+                                    <a href="/parks/{{ favorited_park.park.id }}" class="btn btn-main-sm btn-large">View {{ favorited_park.park.name }}</a>
                                 </div>
                             </div>
                         {% endfor %}

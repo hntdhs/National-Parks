@@ -203,7 +203,7 @@ def show_campgrounds(park_id):
                 description=ground["description"], 
                 reservation_info=ground["reservationInfo"], 
                 reservation_url=ground["reservationUrl"], 
-                wheelchair=ground["accessibility"]["wheelchairAccess"]
+                wheelchair_access=ground["accessibility"]["wheelchairAccess"]
                 # image_title=ground["images"]["title"], 
                 # image_url=ground["images"]["url"],  
                 # image_altText=ground["images"]["altText"]
